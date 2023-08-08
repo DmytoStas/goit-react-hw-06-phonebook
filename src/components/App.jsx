@@ -1,23 +1,19 @@
 import { nanoid } from 'nanoid';
-
-import { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
 import Section from './Section';
 import ContactsList from './ContactsList';
 import Filter from './Filter';
 import PhonebookForm from './PhonebookForm';
-
-const LS_KEY = 'contacts';
+import { addContact } from 'redux/contactsSlice';
+import { toggleFilter } from 'redux/filterSlice';
+import { getContacts, getFilter } from 'redux/selectors';
 
 function App() {
-  const [contacts, setContacts] = useState(() => {
-    return JSON.parse(window.localStorage.getItem(LS_KEY)) ?? [];
-  });
-  const [filter, setFilter] = useState('');
+  const contacts = useSelector(getContacts);
+  const filter = useSelector(getFilter);
 
-  useEffect(() => {
-    window.localStorage.setItem(LS_KEY, JSON.stringify(contacts));
-  }, [contacts]);
+  const dispatch = useDispatch();
 
   const handleSubmit = ({ name, number }) => {
     const hasContact = contacts.some(contact => {
@@ -32,7 +28,7 @@ function App() {
         number,
       };
 
-      setContacts(prevContacts => [...prevContacts, newContact]);
+      dispatch(addContact(newContact));
     } else {
       alert(`${name} is already in contacts.`);
     }
@@ -46,12 +42,6 @@ function App() {
     );
   };
 
-  const deleteContact = evt => {
-    setContacts(prevContacts =>
-      prevContacts.filter(contact => evt.target.id !== contact.id)
-    );
-  };
-
   return (
     <>
       <Section title={'Phonebook'}>
@@ -60,10 +50,10 @@ function App() {
         <Filter
           filter={filter}
           onChange={e => {
-            setFilter(e.target.value);
+            dispatch(toggleFilter(e.target.value));
           }}
         />
-        <ContactsList contacts={visibleContacts()} onClick={deleteContact} />
+        <ContactsList contacts={visibleContacts()} />
       </Section>
     </>
   );
