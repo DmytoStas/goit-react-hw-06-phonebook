@@ -1,17 +1,25 @@
-import PropTypes from 'prop-types';
+import { useSelector, useDispatch } from 'react-redux';
 
-function Filter({ filter, onChange }) {
+import { toggleFilter } from 'redux/filterSlice';
+import { getFilter } from 'redux/selectors';
+
+function Filter() {
+  const filter = useSelector(getFilter);
+
+  const dispatch = useDispatch();
+
   return (
     <div>
       <p>Find contacts by name</p>
-      <input type="text" value={filter} onChange={onChange} />
+      <input
+        type="text"
+        value={filter}
+        onChange={e => {
+          dispatch(toggleFilter(e.target.value));
+        }}
+      />
     </div>
   );
 }
-
-Filter.propTypes = {
-  filter: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-};
 
 export default Filter;

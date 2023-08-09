@@ -1,11 +1,18 @@
-import PropTypes from 'prop-types';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { nanoid } from 'nanoid';
+import { useSelector, useDispatch } from 'react-redux';
+
+import { addContact } from 'redux/contactsSlice';
+import { getContacts } from 'redux/selectors';
 
 import { FormContainer, Label, FormButton } from './PhonebookForm.styled';
 
 function PhonebookForm({ onSubmit }) {
+  const contacts = useSelector(getContacts);
   const initialValues = { name: '', number: '' };
+
+  const dispatch = useDispatch();
 
   const schema = Yup.object().shape({
     name: Yup.string()
@@ -24,8 +31,24 @@ function PhonebookForm({ onSubmit }) {
   });
 
   const handleSubmit = (values, actions) => {
-    onSubmit(values);
-    actions.resetForm();
+    const { name, number } = values;
+    const hasContact = contacts.some(contact => {
+      const normalizedName = contact.name.toLowerCase();
+      return normalizedName === name.toLowerCase();
+    });
+
+    if (!hasContact) {
+      const newContact = {
+        id: nanoid(),
+        name,
+        number,
+      };
+
+      dispatch(addContact(newContact));
+      actions.resetForm();
+    } else {
+      alert(`${name} is already in contacts.`);
+    }
   };
 
   return (
@@ -56,9 +79,5 @@ function PhonebookForm({ onSubmit }) {
     </Formik>
   );
 }
-
-PhonebookForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};
 
 export default PhonebookForm;
